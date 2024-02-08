@@ -17,14 +17,14 @@ RUN apt-get update -y && apt-get upgrade -y && apt-get autoremove -y\
   && apt-get autoremove -y\
   && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-FROM ubuntu:bionic
-RUN apt-get update -y && apt-get upgrade -y && apt-get autoremove -y\ 
-  && apt-get install --no-install-recommends net-tools -y\
-  && apt-get install --no-install-recommends iproute2 -y\
-  && apt-get install --no-install-recommends iputils-ping -y\
-  && apt-get install --no-install-recommends openjdk-11-jre -y\
-  && apt-get autoremove -y\
-  && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+FROM adoptopenjdk/openjdk11:jre-11.0.18_10-alpine as hornet-connector-run
+RUN apk add --update --no-cache \
+  bash \
+  tcpdump \
+  iperf \
+  busybox-extras \
+  iproute2 \
+  iputils
 
 WORKDIR /opt
 
