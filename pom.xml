@@ -33,7 +33,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>io.github.ucd.honet.connector.HonetConnector</mainClass>
+                            <mainClass>io.github.ucd.hornet.connector.HornetConnector</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
