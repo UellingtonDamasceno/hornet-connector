@@ -18,13 +18,15 @@ RUN apt-get update -y && apt-get upgrade -y && apt-get autoremove -y\
   && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 FROM adoptopenjdk/openjdk11:jre-11.0.18_10-alpine as hornet-connector-run
-RUN apk add --update --no-cache \
+RUN apt-get update && apt-get install -y --no-install-recommends \
   bash \
   tcpdump \
-  iperf \
-  busybox-extras \
+  iperf3 \
+  busybox \
   iproute2 \
-  iputils
+  iputils-ping \
+  && rm -rf /var/lib/apt/lists/*
+
 
 WORKDIR /opt
 

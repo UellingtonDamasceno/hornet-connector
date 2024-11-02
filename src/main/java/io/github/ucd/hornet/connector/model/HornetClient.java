@@ -64,41 +64,16 @@ public class HornetClient {
     public static HornetClient updownClient(CommonConfig commonConfig) {
         logger.info("Creating UP_DOWN HonetClient.");
         FlowDirection flowDirection = FlowDirection.UP_DOWN;
-
-        HornetConfig honetConfig = HornetConfig.load(flowDirection);
-        ZMQConfig zmqConfig = ZMQConfig.load(flowDirection);
-
-        ZMQServer server = new ZMQServer(commonConfig.getBufferMaxLen(),
-                zmqConfig.getProtocol(),
-                zmqConfig.getUrl(),
-                zmqConfig.getPort());
-
-        String honetProtocol = honetConfig.getProtocol();
-        String honetUrl = honetConfig.getUrl();
-        int honetPort = honetConfig.getPort();
-
-        LedgerReader reader = new LedgerReader(honetProtocol,
-                honetUrl,
-                honetPort);
-
-        reader.setServer(server);
-        reader.setDebugModeValue(commonConfig.isDebugModeValue());
-
-        LedgerWriter writer = new LedgerWriter(honetProtocol,
-                honetUrl,
-                honetPort,
-                commonConfig.getBufferMaxLen());
-
-        writer.setDebugModeValue(commonConfig.isDebugModeValue());
-
-        return new HornetClient(reader, writer, flowDirection);
+       return HornetClient.createClient(commonConfig, flowDirection);
     }
 
     public static HornetClient downUpClient(CommonConfig commonConfig) {
         logger.info("Creating DOWN_UP HonetClient.");
-
         FlowDirection flowDirection = FlowDirection.DOWN_UP;
-
+        return HornetClient.createClient(commonConfig, flowDirection);
+    }
+    
+    private static HornetClient createClient(CommonConfig commonConfig, FlowDirection flowDirection){
         HornetConfig honetConfig = HornetConfig.load(flowDirection);
         ZMQConfig zmqConfig = ZMQConfig.load(flowDirection);
 
