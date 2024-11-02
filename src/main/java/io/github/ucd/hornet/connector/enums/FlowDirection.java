@@ -8,7 +8,7 @@ public enum FlowDirection {
     UP_DOWN("UD_"),
     DOWN_UP("DU_");
     
-    private String prefix;
+    private final String prefix;
     
     private FlowDirection(String prefix){
         this.prefix = prefix;

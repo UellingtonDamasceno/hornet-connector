@@ -1,6 +1,7 @@
 package io.github.ucd.hornet.connector;
 
 import io.github.ucd.hornet.connector.configs.CommonConfig;
+import io.github.ucd.hornet.connector.enums.FlowDirection;
 import io.github.ucd.hornet.connector.model.HornetClient;
 import io.github.ucd.hornet.connector.services.BridgeService;
 import java.util.concurrent.CountDownLatch;
@@ -26,8 +27,8 @@ public class HornetConnector {
         HornetClient upDownClient = HornetClient.updownClient(commonConfig);
         HornetClient downUpClient = HornetClient.downUpClient(commonConfig);
 
-        BridgeService upBridge = new BridgeService(upDownClient, downUpClient);
-        BridgeService downBridge = new BridgeService(downUpClient, upDownClient);
+        BridgeService upBridge = new BridgeService(upDownClient, downUpClient, FlowDirection.UP_DOWN);
+        BridgeService downBridge = new BridgeService(downUpClient, upDownClient, FlowDirection.DOWN_UP);
 
         upBridge.start();
         downBridge.start();
