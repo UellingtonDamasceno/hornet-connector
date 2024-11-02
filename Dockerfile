@@ -1,4 +1,4 @@
-FROM ubuntu:bionic as build
+FROM ubuntu:bionic AS build
 LABEL maintainder="UDamasceno <udamasceno@ecomp.uefs.br>"
 
 WORKDIR /opt
@@ -17,7 +17,7 @@ RUN apt-get update -y && apt-get upgrade -y && apt-get autoremove -y\
   && apt-get autoremove -y\
   && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-FROM adoptopenjdk/openjdk11:jre-11.0.18_10-alpine as hornet-connector-run
+FROM bellsoft/liberica-openjre-debian:11.0.25 AS hornet-connector-run
 RUN apt-get update && apt-get install -y --no-install-recommends \
   bash \
   tcpdump \
@@ -31,4 +31,4 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /opt
 
 COPY --from=build /opt/hornet-connector/target/hornet-connector-1.0-jar-with-dependencies.jar hornet-connector.jar
-ENTRYPOINT ["java", "-jar", "hornet-connector.jar"]
+CMD ["java", "-jar", "hornet-connector.jar"]
