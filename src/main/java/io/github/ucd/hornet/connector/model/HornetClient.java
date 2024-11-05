@@ -23,11 +23,13 @@ public class HornetClient {
 
     private final LedgerReader reader;
     private final LedgerWriter writer;
+    private final ZMQServer server;
     private final FlowDirection flowDirection;
 
-    private HornetClient(LedgerReader reader, LedgerWriter writer, FlowDirection direction) {
+    private HornetClient(LedgerReader reader, LedgerWriter writer, FlowDirection direction, ZMQServer server) {
         this.reader = reader;
         this.writer = writer;
+        this.server = server;
         this.flowDirection = direction;
     }
 
@@ -36,6 +38,8 @@ public class HornetClient {
     }
 
     public void start() {
+        logger.log(Level.INFO, "ZMQ server is starting - {0}", flowDirection.name());
+        this.server.start();
         logger.log(Level.INFO, "Reader is starting - {0}", flowDirection.name());
         this.reader.start();
         logger.log(Level.INFO, "Writer is starting - {0}", flowDirection);
@@ -47,6 +51,8 @@ public class HornetClient {
         this.writer.stop();
         logger.log(Level.INFO, "Reader is stoping - {0}", flowDirection);
         this.reader.stop();
+        logger.log(Level.INFO, "ZMQ server is stopping - {0}", flowDirection.name());
+        this.server.stop();
     }
 
     public void subscribe(String topic, ILedgerSubscriber subscriber) {
@@ -89,7 +95,7 @@ public class HornetClient {
         LedgerReader reader = new LedgerReader(honetProtocol,
                 honetUrl,
                 honetPort);
-
+        
         reader.setServer(server);
         reader.setDebugModeValue(commonConfig.isDebugModeValue());
 
@@ -100,7 +106,7 @@ public class HornetClient {
 
         writer.setDebugModeValue(commonConfig.isDebugModeValue());
 
-        return new HornetClient(reader, writer, flowDirection);
+        return new HornetClient(reader, writer, flowDirection, server);
     }
 
 }
