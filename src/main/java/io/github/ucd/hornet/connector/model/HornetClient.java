@@ -94,7 +94,7 @@ public class HornetClient {
 
         LedgerReader reader = new LedgerReader(honetProtocol,
                 honetUrl,
-                honetPort);
+               honetPort);
         
         reader.setServer(server);
         reader.setDebugModeValue(commonConfig.isDebugModeValue());
