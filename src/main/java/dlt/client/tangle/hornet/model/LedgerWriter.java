@@ -89,7 +89,7 @@ public class LedgerWriter implements ILedgerWriter, Runnable {
 
                 String transactionJson = gson.toJson(indexTransaction.getTransaction());
 
-                this.createMessage(indexTransaction.getIndex(), transactionJson);
+                this.publishMessage(indexTransaction.getIndex(), transactionJson);
             } catch (InterruptedException ex) {
                 this.DLTOutboundMonitor.interrupt();
             }
@@ -113,22 +113,21 @@ public class LedgerWriter implements ILedgerWriter, Runnable {
      * @param index String - Index of the message.
      * @param data String - Data of the message.
      */
-    public void createMessage(String index, String data) {
+    public void publishMessage(String index, String data) {
         try {
             URL url = new URL(String.format("%s/%s", this.urlApi, ENDPOINT));
 
-            // Abrir conexão HTTP
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("POST");
             connection.setRequestProperty("Content-Type", "application/json");
-            connection.setDoOutput(true); // Permitir a escrita no corpo da requisição
+            connection.setDoOutput(true);
 
-            String requestBody = String.format(
-                    "{\"index\": \"%s\",\"data\": %s}",
-                    index,
-                    data
-            );
-
+            String requestBody = this.createPublishRequestBody(index, data);
+            
+            if (debugModeValue) {
+                logger.log(Level.INFO, "Published message: {0}", requestBody);
+            }
+            
             try (DataOutputStream outputStream = new DataOutputStream(connection.getOutputStream())) {
                 outputStream.writeBytes(requestBody);
                 outputStream.flush();
@@ -142,6 +141,24 @@ public class LedgerWriter implements ILedgerWriter, Runnable {
             logger.log(Level.SEVERE, "Exception occurred while sending HTTP request: {0}", e.getMessage());
         }
     }
+    
+    private String createPublishRequestBody(String index, String data)
+    {
+        String indexInHex = this.stringToHex(index);
+        String dataInHex = this.stringToHex(data);     
+        return String.format(
+                    "{\"payload\":{\"index\": \"%s\",\"data\": \"%s\",\"type\":2}}",
+                    indexInHex,
+                    dataInHex
+            );
+    }
+    
+    private String stringToHex(String string)
+    {
+        return string.chars()
+                .mapToObj(Integer::toHexString)
+                .collect(Collectors.joining());
+    }
 
     private void handleResponse(InputStream stream, int responseCode) {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream))) {
@@ -149,7 +166,7 @@ public class LedgerWriter implements ILedgerWriter, Runnable {
 
             if (responseCode >= HTTP_OK && responseCode <= HTTP_PARTIAL) {
                 if (debugModeValue) {
-                    logger.log(Level.INFO, "Successful API response: {0} - {1}",  new Object[]{responseCode, response});
+                    logger.log(Level.INFO, "Successful API response: {0} - {1}", new Object[]{responseCode, response});
                 }
             } else if (responseCode >= HTTP_MULT_CHOICE && responseCode <= HTTP_USE_PROXY) {
                 if (debugModeValue) {
