@@ -69,17 +69,15 @@ public class HornetClient {
 
     public static HornetClient updownClient(CommonConfig commonConfig) {
         logger.info("Creating UP_DOWN HonetClient.");
-        FlowDirection flowDirection = FlowDirection.UP_DOWN;
-       return HornetClient.createClient(commonConfig, flowDirection);
+        return HornetClient.createClient(commonConfig, FlowDirection.UP_DOWN);
     }
 
     public static HornetClient downUpClient(CommonConfig commonConfig) {
         logger.info("Creating DOWN_UP HonetClient.");
-        FlowDirection flowDirection = FlowDirection.DOWN_UP;
-        return HornetClient.createClient(commonConfig, flowDirection);
+        return HornetClient.createClient(commonConfig, FlowDirection.DOWN_UP);
     }
-    
-    private static HornetClient createClient(CommonConfig commonConfig, FlowDirection flowDirection){
+
+    private static HornetClient createClient(CommonConfig commonConfig, FlowDirection flowDirection) {
         HornetConfig honetConfig = HornetConfig.load(flowDirection);
         ZMQConfig zmqConfig = ZMQConfig.load(flowDirection);
 
@@ -94,8 +92,8 @@ public class HornetClient {
 
         LedgerReader reader = new LedgerReader(honetProtocol,
                 honetUrl,
-               honetPort);
-        
+                honetPort);
+
         reader.setServer(server);
         reader.setDebugModeValue(commonConfig.isDebugModeValue());
 

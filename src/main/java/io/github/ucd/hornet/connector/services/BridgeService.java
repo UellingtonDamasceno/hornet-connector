@@ -1,9 +1,12 @@
 package io.github.ucd.hornet.connector.services;
 
+import dlt.client.tangle.hornet.enums.TransactionType;
 import dlt.client.tangle.hornet.model.transactions.Transaction;
 import dlt.client.tangle.hornet.services.ILedgerSubscriber;
 import io.github.ucd.hornet.connector.enums.FlowDirection;
 import io.github.ucd.hornet.connector.model.HornetClient;
+import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -14,11 +17,10 @@ import java.util.logging.Logger;
 public class BridgeService implements ILedgerSubscriber {
 
     private static final Logger logger = Logger.getLogger(HornetClient.class.getName());
-    
     private final HornetClient reader;
     private final HornetClient writer;
     private final FlowDirection direction;
-    
+
     public BridgeService(HornetClient upDownClient, HornetClient donwUpClient, FlowDirection direction) {
         this.reader = upDownClient;
         this.writer = donwUpClient;
@@ -26,7 +28,7 @@ public class BridgeService implements ILedgerSubscriber {
     }
 
     public void start() {
-        this.reader.subscribe("LB_*", this);
+        this.defaultTopicsList().forEach(t -> this.reader.subscribe(t, this));
         this.reader.start();
         this.writer.start();
     }
@@ -51,5 +53,20 @@ public class BridgeService implements ILedgerSubscriber {
         } catch (InterruptedException ex) {
             logger.log(Level.SEVERE, null, ex);
         }
+    }
+
+    private List<String> defaultTopicsList() {
+        return List.of(
+                "LB_ENTRY",
+                "LB_ENTRY_REPLY",
+                "LB_STATUS",
+                "LB_REQUEST",
+                "LB_REPLY",
+                "LB_DEVICE",
+                "LB_MULTI_REQUEST",
+                "LB_MULTI_RESPONSE",
+                "LB_MULTI_DEVICE_REQUEST",
+                "LB_MULTI_DEVICE_RESPONSE"
+        );
     }
 }
