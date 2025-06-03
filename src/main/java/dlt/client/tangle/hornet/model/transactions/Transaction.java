@@ -168,12 +168,10 @@ public class Transaction {
 
     @Override
     public String toString() {
-        return new StringBuilder("Transaction: ")
-                .append(this.source)
-                .append(this.group)
-                .append(this.type)
-                .append(this.createdAt)
-                .append(this.publishedAt)
-                .toString();
+        return "Transaction{" +
+               "source='" + source + '\'' +
+               ", group='" + group + '\'' +
+               ", type=" + type + 
+               '}';
     }
 }

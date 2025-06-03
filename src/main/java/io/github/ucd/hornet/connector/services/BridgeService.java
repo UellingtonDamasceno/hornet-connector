@@ -1,12 +1,11 @@
 package io.github.ucd.hornet.connector.services;
 
-import dlt.client.tangle.hornet.enums.TransactionType;
+import com.google.common.cache.Cache;
 import dlt.client.tangle.hornet.model.transactions.Transaction;
 import dlt.client.tangle.hornet.services.ILedgerSubscriber;
 import io.github.ucd.hornet.connector.enums.FlowDirection;
 import io.github.ucd.hornet.connector.model.HornetClient;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -21,10 +20,13 @@ public class BridgeService implements ILedgerSubscriber {
     private final HornetClient writer;
     private final FlowDirection direction;
 
-    public BridgeService(HornetClient upDownClient, HornetClient donwUpClient, FlowDirection direction) {
+    private final Cache<String, Boolean> sharedRecentlyForwardedMessageIds;
+
+    public BridgeService(HornetClient upDownClient, HornetClient donwUpClient, FlowDirection direction, Cache forwarededMessageCache) {
         this.reader = upDownClient;
         this.writer = donwUpClient;
         this.direction = direction;
+        this.sharedRecentlyForwardedMessageIds = forwarededMessageCache;
     }
 
     public void start() {
@@ -39,17 +41,25 @@ public class BridgeService implements ILedgerSubscriber {
     }
 
     @Override
-    public void update(Object trans, Object topic) {
+    public void update(Object trans, Object transactionId) {
         if (trans == null) {
             return;
         }
         Transaction transaction = (Transaction) trans;
-        logger.log(Level.INFO, "{0} - {1} - {2} - {3}", new Object[]{direction, topic, transaction.isMultiLayerTransaction(), transaction});
         if (!transaction.isMultiLayerTransaction()) {
+            return;
+        }
+
+        logger.log(Level.INFO, "{0} - {1} - {2} - {3}", new Object[]{direction, transactionId, transaction.isMultiLayerTransaction(), transaction});
+
+        if (this.sharedRecentlyForwardedMessageIds.getIfPresent(transactionId) != null) {
+            logger.log(Level.WARNING, "{0} - Message ID: {1} found in SHARED cache. Skipping to prevent loop.",
+                    new Object[]{direction, transactionId});
             return;
         }
         try {
             this.writer.sendTransaction(transaction);
+            this.sharedRecentlyForwardedMessageIds.put((String) transactionId, true);
         } catch (InterruptedException ex) {
             logger.log(Level.SEVERE, null, ex);
         }

@@ -1,10 +1,13 @@
 package io.github.ucd.hornet.connector;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import io.github.ucd.hornet.connector.configs.CommonConfig;
 import io.github.ucd.hornet.connector.enums.FlowDirection;
 import io.github.ucd.hornet.connector.model.HornetClient;
 import io.github.ucd.hornet.connector.services.BridgeService;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 /**
@@ -21,14 +24,19 @@ public class HornetConnector {
         System.setProperty("java.util.logging.SimpleFormatter.format",
                 "[%1$tF %1$tT] [%4$-7s] %5$s %n");
 
+        Cache<String, Boolean> sharedMessageCache = CacheBuilder.newBuilder()
+            .maximumSize(10000)
+            .expireAfterWrite(1, TimeUnit.MINUTES)
+            .build();
+        
         logger.info("HonnetConnector - Starting...");
         CommonConfig commonConfig = CommonConfig.load();
 
         HornetClient upDownClient = HornetClient.updownClient(commonConfig);
         HornetClient downUpClient = HornetClient.downUpClient(commonConfig);
 
-        BridgeService upBridge = new BridgeService(upDownClient, downUpClient, FlowDirection.UP_DOWN);
-        BridgeService downBridge = new BridgeService(downUpClient, upDownClient, FlowDirection.DOWN_UP);
+        BridgeService upBridge = new BridgeService(upDownClient, downUpClient, FlowDirection.UP_DOWN, sharedMessageCache);
+        BridgeService downBridge = new BridgeService(downUpClient, upDownClient, FlowDirection.DOWN_UP, sharedMessageCache);
 
         upBridge.start();
         downBridge.start();
@@ -47,6 +55,5 @@ public class HornetConnector {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
-
     }
 }
