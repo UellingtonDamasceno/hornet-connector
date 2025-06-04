@@ -161,9 +161,6 @@ public class LedgerWriter implements ILedgerWriter, Runnable {
             
 
             if (responseCode >= HTTP_OK && responseCode <= HTTP_PARTIAL) {
-                if (debugModeValue) {
-                    logger.log(Level.INFO, "{0} | {1} | {2}", new Object[]{responseCode, message, response});
-                }
             } else if (responseCode >= HTTP_MULT_CHOICE && responseCode <= HTTP_USE_PROXY) {
                 if (debugModeValue) {
                     logger.log(Level.WARNING, "Redirection response: {0} - {1}", new Object[]{responseCode, response});

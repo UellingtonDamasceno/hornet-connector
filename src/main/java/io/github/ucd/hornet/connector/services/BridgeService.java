@@ -21,12 +21,14 @@ public class BridgeService implements ILedgerSubscriber {
     private final FlowDirection direction;
 
     private final Cache<Integer, Boolean> sharedRecentlyForwardedMessageIds;
+    private boolean shouldPrintEchoTransaction;
 
-    public BridgeService(HornetClient upDownClient, HornetClient donwUpClient, FlowDirection direction, Cache forwarededMessageCache) {
+    public BridgeService(HornetClient upDownClient, HornetClient donwUpClient, FlowDirection direction, Cache forwarededMessageCache, boolean printEchoTransaction) {
         this.reader = upDownClient;
         this.writer = donwUpClient;
         this.direction = direction;
         this.sharedRecentlyForwardedMessageIds = forwarededMessageCache;
+        this.shouldPrintEchoTransaction = printEchoTransaction;
     }
 
     public void start() {
@@ -45,21 +47,23 @@ public class BridgeService implements ILedgerSubscriber {
         if (trans == null) {
             return;
         }
-        
+
         Transaction transaction = (Transaction) trans;
-        
+
         if (!transaction.isMultiLayerTransaction()) {
             return;
         }
 
         logger.log(Level.INFO, "{0} - {1} ", new Object[]{direction, transaction});
         int transHash = transaction.hashCode();
-        
+
         if (this.sharedRecentlyForwardedMessageIds.getIfPresent(transHash) != null) {
-            logger.log(Level.WARNING, "ECHO - {0} - {1}", new Object[]{direction, transaction});
+            if (this.shouldPrintEchoTransaction) {
+                logger.log(Level.WARNING, "ECHO - {0} - {1}", new Object[]{direction, transaction});
+            }
             return;
         }
-        
+
         try {
             this.writer.sendTransaction(transaction);
             this.sharedRecentlyForwardedMessageIds.put(transHash, true);

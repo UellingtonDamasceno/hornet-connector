@@ -35,8 +35,8 @@ public class HornetConnector {
         HornetClient upDownClient = HornetClient.updownClient(commonConfig);
         HornetClient downUpClient = HornetClient.downUpClient(commonConfig);
 
-        BridgeService upBridge = new BridgeService(upDownClient, downUpClient, FlowDirection.UP_DOWN, sharedMessageCache);
-        BridgeService downBridge = new BridgeService(downUpClient, upDownClient, FlowDirection.DOWN_UP, sharedMessageCache);
+        BridgeService upBridge = new BridgeService(upDownClient, downUpClient, FlowDirection.UP_DOWN, sharedMessageCache, commonConfig.isDebugModeValue());
+        BridgeService downBridge = new BridgeService(downUpClient, upDownClient, FlowDirection.DOWN_UP, sharedMessageCache, commonConfig.isDebugModeValue());
 
         upBridge.start();
         downBridge.start();

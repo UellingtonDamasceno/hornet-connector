@@ -175,7 +175,7 @@ public class Transaction {
     @Override
 
     public int hashCode() {
-        return Objects.hash(source, group, type, createdAt, publishedAt);
+        return Objects.hash(source, group, type, createdAt);
     }
 
     @Override
@@ -191,9 +191,6 @@ public class Transaction {
         }
         final Transaction other = (Transaction) obj;
         if (this.createdAt != other.createdAt) {
-            return false;
-        }
-        if (this.publishedAt != other.publishedAt) {
             return false;
         }
         if (!Objects.equals(this.source, other.source)) {
