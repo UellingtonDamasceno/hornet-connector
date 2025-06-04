@@ -47,24 +47,24 @@ public class BridgeService implements ILedgerSubscriber {
         if (trans == null) {
             return;
         }
-
+        
         Transaction transaction = (Transaction) trans;
 
         if (!transaction.isMultiLayerTransaction()) {
             return;
         }
 
-        logger.log(Level.INFO, "{0} - {1} ", new Object[]{direction, transaction});
         int transHash = transaction.hashCode();
 
         if (this.sharedRecentlyForwardedMessageIds.getIfPresent(transHash) != null) {
             if (this.shouldPrintEchoTransaction) {
-                logger.log(Level.WARNING, "ECHO - {0} - {1}", new Object[]{direction, transaction});
+                logger.log(Level.WARNING, "ECHO - {0} - {1} - {2}", new Object[]{direction, transHash, transaction});
             }
             return;
         }
 
         try {
+            logger.log(Level.INFO, "{0} - {1} - {2}", new Object[]{direction, transHash, transaction});
             this.writer.sendTransaction(transaction);
             this.sharedRecentlyForwardedMessageIds.put(transHash, true);
         } catch (InterruptedException ex) {
