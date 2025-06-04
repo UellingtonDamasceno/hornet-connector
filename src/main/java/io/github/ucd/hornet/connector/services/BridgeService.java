@@ -20,7 +20,7 @@ public class BridgeService implements ILedgerSubscriber {
     private final HornetClient writer;
     private final FlowDirection direction;
 
-    private final Cache<String, Boolean> sharedRecentlyForwardedMessageIds;
+    private final Cache<Integer, Boolean> sharedRecentlyForwardedMessageIds;
 
     public BridgeService(HornetClient upDownClient, HornetClient donwUpClient, FlowDirection direction, Cache forwarededMessageCache) {
         this.reader = upDownClient;
@@ -45,21 +45,24 @@ public class BridgeService implements ILedgerSubscriber {
         if (trans == null) {
             return;
         }
+        
         Transaction transaction = (Transaction) trans;
+        
         if (!transaction.isMultiLayerTransaction()) {
             return;
         }
 
-        logger.log(Level.INFO, "{0} - {1} - {2} - {3}", new Object[]{direction, transactionId, transaction.isMultiLayerTransaction(), transaction});
-
-        if (this.sharedRecentlyForwardedMessageIds.getIfPresent(transactionId) != null) {
-            logger.log(Level.WARNING, "{0} - Message ID: {1} found in SHARED cache. Skipping to prevent loop.",
-                    new Object[]{direction, transactionId});
+        logger.log(Level.INFO, "{0} - {1} ", new Object[]{direction, transaction});
+        int transHash = transaction.hashCode();
+        
+        if (this.sharedRecentlyForwardedMessageIds.getIfPresent(transHash) != null) {
+            logger.log(Level.WARNING, "ECHO - {0} - {1}", new Object[]{direction, transaction});
             return;
         }
+        
         try {
             this.writer.sendTransaction(transaction);
-            this.sharedRecentlyForwardedMessageIds.put((String) transactionId, true);
+            this.sharedRecentlyForwardedMessageIds.put(transHash, true);
         } catch (InterruptedException ex) {
             logger.log(Level.SEVERE, null, ex);
         }
@@ -67,12 +70,6 @@ public class BridgeService implements ILedgerSubscriber {
 
     private List<String> defaultTopicsList() {
         return List.of(
-                "LB_ENTRY",
-                "LB_ENTRY_REPLY",
-                "LB_STATUS",
-                "LB_REQUEST",
-                "LB_REPLY",
-                "LB_DEVICE",
                 "LB_MULTI_REQUEST",
                 "LB_MULTI_RESPONSE",
                 "LB_MULTI_DEVICE_REQUEST",

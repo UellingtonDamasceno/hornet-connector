@@ -245,7 +245,6 @@ public class LedgerReader implements ILedgerReader, Runnable {
         Set<ILedgerSubscriber> subscribers = this.topics.getOrDefault(topic, new HashSet());
 
         if (subscribers == null || subscribers.isEmpty()) {
-            logger.log(Level.WARNING, "CLIENT_TANGLE/DLT_INBOUND_MONITOR: nenhum assinante encontrado para o tópico: {0}", topic);
             return;
         }
 

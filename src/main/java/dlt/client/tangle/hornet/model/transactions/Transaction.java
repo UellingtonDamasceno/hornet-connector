@@ -12,6 +12,7 @@ import java.io.StringReader;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Logger;
 import static java.util.stream.Collectors.toList;
 
@@ -28,7 +29,7 @@ public class Transaction {
 
     private final long createdAt;
     private long publishedAt;
-    
+
     private static final Logger logger = Logger.getLogger(
             Transaction.class.getName()
     );
@@ -51,10 +52,6 @@ public class Transaction {
             String transactionJSON,
             boolean debugModeValue
     ) {
-        if (debugModeValue) {
-            logger.info("JSON Message");
-            logger.info(transactionJSON);
-        }
 
         JsonReader reader = new JsonReader(new StringReader(transactionJSON));
 
@@ -118,10 +115,11 @@ public class Transaction {
     public static List<Transaction> jsonArrayInStringToTransaction(
             String jsonArrayInString,
             boolean debugModeValue) {
-        
+
         Gson gson = new Gson();
-        Type listType = new TypeToken<ArrayList<Payload>>() {}.getType();
-        
+        Type listType = new TypeToken<ArrayList<Payload>>() {
+        }.getType();
+
         ArrayList<Payload> payloadList = gson.fromJson(jsonArrayInString, listType);
 
         return payloadList.stream()
@@ -168,10 +166,43 @@ public class Transaction {
 
     @Override
     public String toString() {
-        return "Transaction{" +
-               "source='" + source + '\'' +
-               ", group='" + group + '\'' +
-               ", type=" + type + 
-               '}';
+        return "Transaction{"
+                + "source='" + source + '\''
+                + ", type=" + type
+                + '}';
     }
+
+    @Override
+
+    public int hashCode() {
+        return Objects.hash(source, group, type, createdAt, publishedAt);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Transaction other = (Transaction) obj;
+        if (this.createdAt != other.createdAt) {
+            return false;
+        }
+        if (this.publishedAt != other.publishedAt) {
+            return false;
+        }
+        if (!Objects.equals(this.source, other.source)) {
+            return false;
+        }
+        if (!Objects.equals(this.group, other.group)) {
+            return false;
+        }
+        return this.type == other.type;
+    }
+
 }
